@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import HomeNavbar from '../navbar/HomeNavbar';
+import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 
 const ViewProduct = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -73,25 +74,34 @@ const ViewProduct = () => {
         }
 
         updateCart(updatedCart);
-        alert(`${selectedProduct.title} added to cart`);
     };
 
     const handleIncrease = () => {
-        const updatedCart = cartItems.map(cartItem =>
-            cartItem.productId === selectedProduct.id
-                ? { ...cartItem, quantity: cartItem.quantity + 1 }
-                : cartItem
-        );
-        updateCart(updatedCart);
+        const existingItem = cartItems.find(cartItem => cartItem.productId === selectedProduct.id);
+
+        if (existingItem) {
+            const updatedCart = cartItems.map(cartItem =>
+                cartItem.productId === selectedProduct.id
+                    ? { ...cartItem, quantity: cartItem.quantity + 1 }
+                    : cartItem
+            );
+            updateCart(updatedCart);
+        } else {
+            handleAddToCart();
+        }
     };
 
     const handleDecrease = () => {
-        const updatedCart = cartItems.map(cartItem =>
-            cartItem.productId === selectedProduct.id && cartItem.quantity > 1
-                ? { ...cartItem, quantity: cartItem.quantity - 1 }
-                : cartItem
-        );
-        updateCart(updatedCart);
+        const existingItem = cartItems.find(cartItem => cartItem.productId === selectedProduct.id);
+
+        if (existingItem && existingItem.quantity > 1) {
+            const updatedCart = cartItems.map(cartItem =>
+                cartItem.productId === selectedProduct.id
+                    ? { ...cartItem, quantity: cartItem.quantity - 1 }
+                    : cartItem
+            );
+            updateCart(updatedCart);
+        }
     };
 
     const getQuantity = () => {
@@ -99,8 +109,9 @@ const ViewProduct = () => {
         return item ? item.quantity : 0;
     };
 
-    const calculateTotalPrice = () => {
-        return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+    const calculateProductTotal = () => {
+        const item = cartItems.find(cartItem => cartItem.productId === selectedProduct?.id);
+        return item ? (item.price * item.quantity).toFixed(2) : (selectedProduct?.price || 0).toFixed(2);
     };
 
     if (isLoading) {
@@ -114,38 +125,84 @@ const ViewProduct = () => {
     return (
         <div>
             <HomeNavbar cartLength={cartItems.length} />
-            <div className="container mt-5">
+            <div className="container my-5">
                 <div className="row">
-                    <div className="col-md-6">
+                    <div className="col-md-6 d-flex align-items-center justify-content-center mb-4">
                         <img
                             src={selectedProduct.image}
                             alt={selectedProduct.title}
-                            style={{ width: '100%', objectFit: 'contain', height: '400px' }}
+                            style={{
+                                width: '100%',
+                                maxWidth: '400px',
+                                height: '400px',
+                                objectFit: 'contain',
+                                border: '1px solid #ccc',
+                                borderRadius: '10px',
+                                padding: '20px',
+                                background: '#fff'
+                            }}
                         />
                     </div>
-                    <div className="col-md-6">
+                    <div className="col-md-6 mb-4">
                         <h3>{selectedProduct.title}</h3>
-                        <h4>${selectedProduct.price}</h4>
-                        <p>{selectedProduct.description}</p>
-                        {/* <div className="mb-3">
-              <strong>Selected Quantity: {getQuantity()}</strong>
-            </div> */}
-                        <div className="mb-3">
-                            <button className="btn btn-secondary" onClick={handleDecrease}>
+                        <h4 style={{ color: 'green' }}>${selectedProduct.price}</h4>
+                        <p style={{ fontSize: '15px', color: '#555' }}>{selectedProduct.description}</p>
+
+                        {/* <div className="mb-3 cart-controls d-flex flex-row justifyconten-none">
+                            <button
+                                className="btn btn-outline-secondary"
+                                onClick={handleDecrease}
+                                
+                            >
                                 -
                             </button>
-                            <span className="mx-2">{getQuantity()}</span>
-                            <button className="btn btn-secondary" onClick={handleIncrease}>
+                            <span style={{ margin: '0 15px', fontSize: '18px' }}>{getQuantity()}</span>
+                            <button
+                                className="btn btn-outline-secondary"
+                                onClick={handleIncrease}
+                                
+                            >
+                                +
+                            </button>
+                        </div> */}
+                        <div className="flex items-center gap-4 mb-4 quantity-controls">
+                            <button
+                                className="add-to-cart-btn"
+                                onClick={handleDecrease}
+                            >
+                                -
+                            </button>
+                            <span className="text-lg font-semibold">{getQuantity()}</span>
+                            <button
+                                className="add-to-cart-btn"
+                                onClick={handleIncrease}
+                            >
                                 +
                             </button>
                         </div>
+
+
+                        {/* <div className="mb-3">
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleAddToCart}
+                                style={{ padding: '10px 20px', fontSize: '16px', borderRadius: '8px' }}
+                            >
+                                Add to Cart
+                            </button>
+                        </div> */}
+
                         <a href="/cart">
-                            <button className="btn btn-primary" >
+                            <button size="sm"
+                                 className="view-details-btn"
+                                style={{ padding: '10px 20px', fontSize: '16px', borderRadius: '8px' }}
+                            >
                                 Move to Cart
                             </button>
                         </a>
-                        <div className="mt-3">
-                            <h5>Total Price: ${calculateTotalPrice()}</h5>
+
+                        <div className="mt-4">
+                            <h5>Total Price: <span style={{ color: 'blue' }}>${calculateProductTotal()}</span></h5>
                         </div>
                     </div>
                 </div>
@@ -155,3 +212,4 @@ const ViewProduct = () => {
 };
 
 export default ViewProduct;
+
