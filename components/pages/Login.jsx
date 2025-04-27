@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { auth } from '../../auth/firebase';
@@ -11,22 +12,15 @@ const Login = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [generalError, setGeneralError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) {
-      setEmailError('Please enter a valid email');
-    } else {
-      setEmailError('');
-    }
+    setEmailError(!emailRegex.test(value) ? 'Please enter a valid email' : '');
   };
 
   const validatePassword = (value) => {
-    if (value.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-    } else {
-      setPasswordError('');
-    }
+    setPasswordError(value.length < 6 ? 'Password must be at least 6 characters' : '');
   };
 
   const handleLogin = async (e) => {
@@ -34,15 +28,18 @@ const Login = () => {
     setGeneralError('');
 
     if (emailError || passwordError || !email || !password) {
-      setGeneralError('Please fix the errors before submitting');
+      setGeneralError('Please enter the values');
       return;
     }
 
+    setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/home');
     } catch (err) {
       setGeneralError(err.message.replace('Firebase:', '').trim());
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,11 +54,11 @@ const Login = () => {
           type="email"
           placeholder="Email"
           value={email}
+          disabled={loading}
           onChange={(e) => {
             setEmail(e.target.value);
             validateEmail(e.target.value);
           }}
-          required
         />
         {emailError && <p style={styles.inputError}>{emailError}</p>}
 
@@ -70,18 +67,27 @@ const Login = () => {
           type="password"
           placeholder="Password"
           value={password}
+          disabled={loading}
           onChange={(e) => {
             setPassword(e.target.value);
             validatePassword(e.target.value);
           }}
-          required
         />
         {passwordError && <p style={styles.inputError}>{passwordError}</p>}
 
-        <button style={styles.button} type="submit">Login</button>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            ...styles.button,
+            ...(loading ? styles.buttonDisabled : {})
+          }}
+        >
+          {loading ? 'Logging in...' : 'Login'}
+        </button>
       </form>
 
-      <p className="mt-3">
+      <p style={styles.signupText}>
         Don't have an account?{' '}
         <a href="/signup" style={styles.link}>Sign up</a>
       </p>
@@ -126,6 +132,7 @@ const styles = {
     fontSize: '16px',
     borderRadius: '4px',
     border: '1px solid #ccc',
+    outline: 'none',
   },
   button: {
     padding: '10px',
@@ -136,10 +143,18 @@ const styles = {
     borderRadius: '4px',
     cursor: 'pointer',
   },
+  buttonDisabled: {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+  signupText: {
+    marginTop: '15px',
+    fontSize: '14px',
+  },
   link: {
     color: '#0070f3',
     textDecoration: 'none',
-  }
+  },
 };
 
 export default Login;
