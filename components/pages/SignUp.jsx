@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { auth } from '../../auth/firebase'; 
@@ -12,22 +10,15 @@ const Signup = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [generalError, setGeneralError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const validateEmail = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) {
-      setEmailError('Please enter a valid email');
-    } else {
-      setEmailError('');
-    }
+    setEmailError(!emailRegex.test(value) ? 'Please enter a valid email' : '');
   };
 
   const validatePassword = (value) => {
-    if (value.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-    } else {
-      setPasswordError('');
-    }
+    setPasswordError(value.length < 6 ? 'Password must be at least 6 characters' : '');
   };
 
   const handleSignup = async (e) => {
@@ -39,11 +30,14 @@ const Signup = () => {
       return;
     }
 
+    setLoading(true);
     try {
       await createUserWithEmailAndPassword(auth, email, password);
       router.push('/login');
     } catch (err) {
       setGeneralError(err.message.replace('Firebase:', '').trim());
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,6 +52,7 @@ const Signup = () => {
           type="email"
           placeholder="Email"
           value={email}
+          disabled={loading}
           onChange={(e) => {
             setEmail(e.target.value);
             validateEmail(e.target.value);
@@ -70,6 +65,7 @@ const Signup = () => {
           type="password"
           placeholder="Password"
           value={password}
+          disabled={loading}
           onChange={(e) => {
             setPassword(e.target.value);
             validatePassword(e.target.value);
@@ -77,7 +73,16 @@ const Signup = () => {
         />
         {passwordError && <p style={styles.inputError}>{passwordError}</p>}
 
-        <button style={styles.button} type="submit">Sign Up</button>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            ...styles.button,
+            ...(loading ? styles.buttonDisabled : {})
+          }}
+        >
+          {loading ? 'Signing Up...' : 'Sign Up'}
+        </button>
       </form>
 
       <p style={styles.loginText}>
@@ -139,6 +144,10 @@ const styles = {
     borderRadius: '6px',
     cursor: 'pointer',
     transition: 'background-color 0.3s ease',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+    cursor: 'not-allowed',
   },
   loginText: {
     marginTop: '20px',
