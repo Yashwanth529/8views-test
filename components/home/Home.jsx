@@ -1,6 +1,4 @@
 
-
-
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Form, Button, Card } from 'react-bootstrap';
 import HomeNavbar from '../navbar/HomeNavbar';
@@ -89,9 +87,8 @@ const Home = () => {
     setCartItems(updatedCart);
     setCartLength(updatedCart.length);
 
-    // Save cart to localStorage
     localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-    localStorage.setItem('cartLength', updatedCart.length);  // Store cart length
+    localStorage.setItem('cartLength', updatedCart.length);
 
     const cart = {
       userId: 1,
@@ -100,13 +97,11 @@ const Home = () => {
     };
 
     try {
-      const res = await fetch('https://fakestoreapi.com/carts', {
+      await fetch('https://fakestoreapi.com/carts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cart)
       });
-      const data = await res.json();
-      console.log('Cart updated:', data);
     } catch (error) {
       console.error('Error updating cart:', error);
     }
@@ -127,9 +122,8 @@ const Home = () => {
     setCartItems(updatedCart);
     setCartLength(updatedCart.length);
 
-    // Save cart to localStorage
     localStorage.setItem('cartItems', JSON.stringify(updatedCart));
-    localStorage.setItem('cartLength', updatedCart.length);  // Store cart length
+    localStorage.setItem('cartLength', updatedCart.length);
 
     const cart = {
       userId: 1,
@@ -138,63 +132,21 @@ const Home = () => {
     };
 
     try {
-      const res = await fetch('https://fakestoreapi.com/carts', {
+      await fetch('https://fakestoreapi.com/carts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(cart),
       });
-      const data = await res.json();
-      console.log('Cart updated:', data);
     } catch (error) {
       console.error('Error updating cart:', error);
     }
   };
 
-
   return (
-    <div>
+    <div className="home-page">
       <HomeNavbar cartLength={cartLength} />
       <Container fluid className="mt-4">
         <Row>
-          {/* Left Filter Sidebar */}
-          {/* <Col md={3}>
-            <h4>Filters</h4>
-
-            <div className="mb-4">
-              <h6 className='mt-4'>Categories</h6>
-              {categories.map((cat) => (
-                <Button
-                  key={cat}
-                  variant={selectedCategory === cat ? 'primary' : 'outline-primary'}
-                  onClick={() => handleCategoryFilter(cat)}
-                  className="mb-2 me-2"
-                  size="sm"
-                >
-                  {cat.toUpperCase()}
-                </Button>
-              ))}
-            </div>
-
-            <div className="mb-4">
-              <h6>Search</h6>
-              <Form.Control
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className='data-input'
-              />
-            </div>
-
-            <div className='mb-4 mb-lg-0'>
-              <h6>Sort By Price</h6>
-              <Form.Select value={priceFilter} onChange={handlePriceChange} className='data-input'>
-                <option value="">Select</option>
-                <option value="lowToHigh">Low to High</option>
-                <option value="highToLow">High to Low</option>
-              </Form.Select>
-            </div>
-          </Col> */}
           <Col md={3} className="filters-section">
             <h4 className="filters-title">Filters</h4>
 
@@ -212,7 +164,6 @@ const Home = () => {
                   {cat.toUpperCase()}
                 </Button>
               ))}
-
             </div>
 
             <div className="filter-group mb-4">
@@ -226,7 +177,7 @@ const Home = () => {
               />
             </div>
 
-            <div className="filter-group mb-4 mb-lg-0">
+            <div className="filter-group mb-4">
               <h6 className="filter-heading">Sort By Price</h6>
               <Form.Select
                 value={priceFilter}
@@ -240,46 +191,52 @@ const Home = () => {
             </div>
           </Col>
 
-
-          {/* Right Products Grid */}
           <Col md={9}>
             <Row>
-              {filtered.map((item) => (
-                <Col key={item.id} xs={12} sm={6} md={4} className="mb-4">
-                  <Card className="h-100 shadow-sm">
-                    <Card.Img
-                      variant="top"
-                      src={item.image}
-                      style={{ height: '200px', objectFit: 'contain', padding: '10px' }}
-                    />
-                    <Card.Body className="d-flex flex-column">
-                      <Card.Title style={{ fontSize: '1rem' }}>{item.title}</Card.Title>
-                      <Card.Text className="mt-auto">
-                        <strong>${item.price}</strong>
-                      </Card.Text>
-                      <div className='d-flex flex-row justify-content-between align-items-center'>
-                        {cartItems.some(ci => ci.productId === item.id) ? (
-                          <div className='d-flex align-items-center gap-2'>
-                            <Button size="sm" onClick={() => decreaseQuantity(item.id)}>-</Button>
-                            <span>
-                              {cartItems.find(ci => ci.productId === item.id)?.quantity}
-                            </span>
-                            <Button size="sm" onClick={() => increaseQuantity(item.id)}>+</Button>
-                          </div>
-                        ) : (
-                          <button className='add-to-cart-btn' onClick={() => handleAddToCart(item)}>
-                            Add to Cart
-                          </button>
-                        )}
+              {filtered.length === 0 ? (
+                <div className="no-products">No products found.</div>
+              ) : (
+                filtered.map((item) => (
+                  <Col key={item.id} xs={12} sm={6} md={4} className="mb-4">
+                    <Card className="h-100 product-card shadow-sm">
+                      <Card.Img
+                        variant="top"
+                        src={item.image}
+                        className="product-image"
+                      />
+                      <Card.Body className="d-flex flex-column">
+                        <Card.Title className="product-title">{item.title}</Card.Title>
+                        <Card.Text className="mt-auto">
+                          <strong>${item.price}</strong>
+                        </Card.Text>
 
-                        <button className='view-details-btn' onClick={() => viewDetails(item.id)}>
-                          View Details
-                        </button>
-                      </div>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))}
+                        <div className="cart-controls">
+                          {cartItems.some(ci => ci.productId === item.id) ? (
+                            <div className='quantity-controls'>
+                              <button className="add-to-cart-btn" size="sm" onClick={() => decreaseQuantity(item.id)}>-</button>
+                              <span>{cartItems.find(ci => ci.productId === item.id)?.quantity}</span>
+                              <button className="add-to-cart-btn" size="sm" onClick={() => increaseQuantity(item.id)}>+</button>
+                            </div>
+                          ) : (
+                            <button className="add-to-cart-btn" onClick={() => handleAddToCart(item)}>
+                              Add to Cart
+                            </button>
+                          )}
+
+                          <button
+                           
+                            size="sm"
+                            className="view-details-btn"
+                            onClick={() => viewDetails(item.id)}
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))
+              )}
             </Row>
           </Col>
         </Row>
